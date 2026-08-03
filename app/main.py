@@ -3,6 +3,8 @@ from .models import Student
 from fastapi import HTTPException
 
 
+
+
 app = FastAPI()
 
 
@@ -55,10 +57,22 @@ def delete_student(student_id: int):
     )
 
 
-
-
-
-
+@app.put("/students/{student_id}")
+def update_student(student_id: int, updated_student: Student):  
+    for existing_student in students_db:
+        if existing_student.id == student_id:
+            existing_student.name = updated_student.name
+            existing_student.faculty = updated_student.faculty
+            existing_student.semester = updated_student.semester
+            existing_student.email = updated_student.email
+            return {
+                "message": "Student updated successfully",
+                "student": existing_student
+            }
+    raise HTTPException(
+        status_code=404,
+        detail="Student not found"
+    )
 
 
 

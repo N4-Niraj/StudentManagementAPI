@@ -7,3 +7,4 @@ class Student(BaseModel):
     faculty: str
     semester: int
     email: str
+
