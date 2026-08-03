@@ -42,6 +42,28 @@ def get_student(student_id: int):
     detail="Student not foundddd"
 )
 
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int):
+    for existing_student in students_db:
+        if existing_student.id == student_id:
+            students_db.remove(existing_student)
+            return {"message": "Student deleted successfully"}
+    
+    raise HTTPException(
+        status_code=404,
+        detail="Student not found"
+    )
+
+
+
+
+
+
+
+
+
+
+
 
 
 
