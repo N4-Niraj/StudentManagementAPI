@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from .models import Student
+from fastapi import HTTPException
+
 
 app = FastAPI()
 
@@ -18,6 +20,18 @@ def create_student(student: Student):
     return {
             "message": "student created successfully",
             "student": student}
+
+@app.get("/students/{student_id}")
+def get_student(student_id: int):
+    for student in students_db:
+        if student.id == student_id:
+            return student
+        
+    raise HTTPException(
+    status_code=404,
+    detail="Student not foundddd"
+)
+
 
 
 
