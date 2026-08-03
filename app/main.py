@@ -16,16 +16,26 @@ def get_students():
 
 @app.post("/students")
 def create_student(student: Student):
+    for existing_student in students_db:
+        if existing_student.id == student.id:
+            raise HTTPException(
+                status_code=409,
+                detail="Student with this ID already exists"
+            )
     students_db.append(student)
     return {
             "message": "student created successfully",
             "student": student}
+    
+    
+    
+    
 
 @app.get("/students/{student_id}")
 def get_student(student_id: int):
-    for student in students_db:
-        if student.id == student_id:
-            return student
+    for existing_student in students_db:
+        if existing_student.id == student_id:
+            return existing_student    
         
     raise HTTPException(
     status_code=404,
