@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .models import Student
+from .schemas import Student
 from fastapi import HTTPException
 
 
