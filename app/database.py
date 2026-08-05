@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from .models import Base
 
 DATABASE_URL = "postgresql://postgres:123123@localhost:5432/student_management"
 
@@ -18,3 +19,7 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+        
+        
+Base.metadata.create_all(bind=engine)
