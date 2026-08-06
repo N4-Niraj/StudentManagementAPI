@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .schemas import Student
+
 from fastapi import HTTPException
 
 from fastapi import Depends
@@ -9,6 +9,7 @@ from .database import get_db
 from .models import Student as StudentModel
 
 
+from .schemas import StudentCreate, StudentResponse, StudentUpdate
 
 
 
@@ -21,35 +22,31 @@ app = FastAPI()
 def root():
     return {"message": "Welcome to Student Management API"}
 
-@app.get("/students")
+@app.get("/students", response_model=list[StudentResponse])
 def get_students(db: Session = Depends(get_db)):
     students = db.query(StudentModel).all()
     return students
 
-@app.post("/students")
-def create_student(student: Student, db: Session = Depends(get_db)):
+@app.post("/students", response_model=StudentResponse)
+def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     new_student = StudentModel(
-        id=student.id,
-        name=student.name,
-        faculty=student.faculty,
-        semester=student.semester,
-        email=student.email
-    )
+    name=student.name,
+    faculty=student.faculty,
+    semester=student.semester,
+    email=student.email
+)
 
     db.add(new_student)
     db.commit()
     db.refresh(new_student)
 
-    return {
-        "message": "Student created successfully",
-        "student": new_student
-    }
+    return new_student
     
     
     
     
 
-@app.get("/students/{student_id}")
+@app.get("/students/{student_id}", response_model=StudentResponse)
 def get_student(student_id: int, db: Session = Depends(get_db)):
     student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
     if not student:
@@ -76,8 +73,10 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
    
 
 
-@app.put("/students/{student_id}")
-def update_student(student_id: int, updated_student: Student, db: Session = Depends(get_db)):
+@app.put("/students/{student_id}", response_model=StudentResponse)
+def update_student(student_id: int,
+                   updated_student: StudentUpdate,
+                   db: Session = Depends(get_db)):
     student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
 
     if not student:
@@ -95,10 +94,7 @@ def update_student(student_id: int, updated_student: Student, db: Session = Depe
     db.commit()
     db.refresh(student)
 
-    return {
-        "message": "Student updated successfully",
-        "student": student
-    }
+    return student
 
 
 
