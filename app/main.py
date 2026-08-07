@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
+
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -8,11 +9,7 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Student as StudentModel
 
-
 from .schemas import StudentCreate, StudentResponse, StudentUpdate
-
-
-
 
 
 app = FastAPI()
@@ -37,8 +34,17 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
 )
 
     db.add(new_student)
-    db.commit()
-    db.refresh(new_student)
+    
+    try:
+        db.commit()
+        db.refresh(new_student)
+        
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
 
     return new_student
     
