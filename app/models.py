@@ -12,5 +12,4 @@ class Student(Base):
     name = Column(String(200))
     faculty = Column(String(100))
     semester = Column(Integer)
-    email = Column(String(100))
-    
+    email = Column(String(100), unique=True, nullable=False)
