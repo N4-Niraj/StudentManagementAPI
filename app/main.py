@@ -1,7 +1,9 @@
+from argon2 import hash_password
 from fastapi import FastAPI
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
+from .security import hash_password
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -9,7 +11,9 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Student as StudentModel
 
-from .schemas import StudentCreate, StudentResponse, StudentUpdate
+from .models import User as UserModel
+
+from .schemas import StudentCreate, StudentResponse, StudentUpdate, UserCreate, UserResponse, UserResponse
 
 
 app = FastAPI()
@@ -23,6 +27,28 @@ def root():
 def get_students(db: Session = Depends(get_db)):
     students = db.query(StudentModel).all()
     return students
+
+@app.post("/auth/register", response_model= UserResponse)
+def register_user( user: UserCreate, db: Session = Depends(get_db)):
+    hashed_password = hash_password(user.password)
+
+    new_user = UserModel(
+        email=user.email,
+        password_hash=hashed_password
+    )
+
+    db.add(new_user)
+    try:
+        db.commit()
+        db.refresh(new_user)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+    return new_user
 
 @app.post("/students", response_model=StudentResponse)
 def create_student(student: StudentCreate, db: Session = Depends(get_db)):
@@ -49,7 +75,7 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     return new_student
     
     
-    
+
     
 
 @app.get("/students/{student_id}", response_model=StudentResponse)

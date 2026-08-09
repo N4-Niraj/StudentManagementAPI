@@ -22,4 +22,17 @@ class StudentUpdate(BaseModel):
     name: str
     faculty: str
     semester: int
-    email: str
+    email: EmailStr
+    
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+
+    model_config = {
+        "from_attributes": True
+    }
