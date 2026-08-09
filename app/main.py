@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
-from .security import hash_password
+from .security import hash_password, verify_password
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -13,7 +13,14 @@ from .models import Student as StudentModel
 
 from .models import User as UserModel
 
-from .schemas import StudentCreate, StudentResponse, StudentUpdate, UserCreate, UserResponse, UserResponse
+from .schemas import (
+    StudentCreate,
+    StudentResponse,
+    StudentUpdate,
+    UserCreate,
+    UserResponse,
+    UserLogin
+)
 
 
 app = FastAPI()
@@ -28,27 +35,7 @@ def get_students(db: Session = Depends(get_db)):
     students = db.query(StudentModel).all()
     return students
 
-@app.post("/auth/register", response_model= UserResponse)
-def register_user( user: UserCreate, db: Session = Depends(get_db)):
-    hashed_password = hash_password(user.password)
 
-    new_user = UserModel(
-        email=user.email,
-        password_hash=hashed_password
-    )
-
-    db.add(new_user)
-    try:
-        db.commit()
-        db.refresh(new_user)
-
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="Email already exists"
-        )
-    return new_user
 
 @app.post("/students", response_model=StudentResponse)
 def create_student(student: StudentCreate, db: Session = Depends(get_db)):
@@ -129,6 +116,53 @@ def update_student(student_id: int,
     return student
 
 
+@app.post("/auth/register", response_model= UserResponse)
+def register_user( user: UserCreate, db: Session = Depends(get_db)):
+    hashed_password = hash_password(user.password)
+
+    new_user = UserModel(
+        email=user.email,
+        password_hash=hashed_password
+    )
+
+    db.add(new_user)
+    try:
+        db.commit()
+        db.refresh(new_user)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+    return new_user
 
 
+@app.post("/auth/login")
+def login_user(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(UserModel).filter(
+        UserModel.email == user.email
+    ).first()
 
+    if not existing_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
+    if not verify_password(
+        user.password,
+        existing_user.password_hash
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
+    return {
+        "message": "Login successful"
+    }
