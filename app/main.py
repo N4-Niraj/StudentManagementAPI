@@ -14,6 +14,7 @@ from .models import User as UserModel
 
 from .security import (
     hash_password,
+    require_admin,
     verify_password,
     create_access_token,
     get_current_user
@@ -48,7 +49,11 @@ def get_students(
 
 
 @app.post("/students", response_model=StudentResponse)
-def create_student(student: StudentCreate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
+def create_student(
+                    student: StudentCreate,
+                    db: Session = Depends(get_db),
+                    current_user: UserModel = Depends(get_current_user
+                )):
     new_student = StudentModel(
     name=student.name,
     faculty=student.faculty,
@@ -80,7 +85,9 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db), curren
 
 
 @app.delete("/students/{student_id}")
-def delete_student(student_id: int, db: Session = Depends(get_db),current_user: UserModel = Depends(get_current_user)):
+def delete_student(student_id: int,
+                   db: Session = Depends(get_db),
+                   current_user: UserModel = Depends(require_admin)):
     student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
     if not student:
         raise HTTPException(
