@@ -7,6 +7,7 @@ function StudentList() {
         { id: 3, name: "Sita" }
     ])
     const [name, setName] = useState("")
+    const nextId = Math.max(...students.map(student => student.id)) + 1
     return (
 
         <div>
@@ -17,6 +18,7 @@ function StudentList() {
                 placeholder="Enter student name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
                 {students.map(student => (
@@ -25,13 +27,23 @@ function StudentList() {
                     </div>
                 ))}
             </div>
+            
             <div className="flex justify-center mt-4">
                 <button className="bg-blue-200 hover:bg-blue-400 text-black font-bold py-2.5 px-4 rounded " onClick={() => {
+                    if (name.trim() === "") {
+                        alert("Please enter a name");
+                        return;
+                    }
+                    
                     const newStudents = [
                         ...students,
-                        { id: 4, name: name }
+                    
+                        { id: nextId, name: name }
+                    
                     ];
+                    
                     setStudents(newStudents);
+                    setName("");
                 }}>Add Student</button>
             </div>
         </div>
