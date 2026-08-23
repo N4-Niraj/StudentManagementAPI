@@ -1,6 +1,9 @@
 
 from fastapi import FastAPI
 from fastapi import HTTPException
+
+from fastapi import status
+
 from sqlalchemy.exc import IntegrityError
 
 
@@ -26,7 +29,8 @@ from .schemas import (
     StudentUpdate,
     UserCreate,
     UserResponse,
-    UserLogin
+    UserLogin,
+    UserUpdate
 )
 
 from fastapi.security import OAuth2PasswordRequestForm
@@ -181,3 +185,35 @@ def login_user(
         "access_token": access_token,
         "token_type": "bearer"
     }
+    
+@app.get("/users/me", response_model=UserResponse)
+def get_my_profile(
+    
+    current_user: UserModel = Depends(get_current_user)
+):
+    return current_user
+
+@app.put("/users/me", response_model=UserResponse)
+def update_my_profile(
+    updated_user: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    current_user.email = updated_user.email
+    current_user.password_hash = hash_password(updated_user.password)
+        
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+
+@app.delete("/users/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_my_account(
+                   db: Session = Depends(get_db),
+                   current_user: UserModel = Depends(get_current_user)
+                   ):
+  
+    db.delete(current_user)
+    db.commit()
+    return 
+    
