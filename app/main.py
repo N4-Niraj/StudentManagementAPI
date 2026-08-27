@@ -56,8 +56,7 @@ def get_students(
 def create_student(
                     student: StudentCreate,
                     db: Session = Depends(get_db),
-                    current_user: UserModel = Depends(get_current_user
-                )):
+                    current_user: UserModel = Depends(require_admin)):
     new_student = StudentModel(
     name=student.name,
     faculty=student.faculty,
@@ -109,7 +108,7 @@ def delete_student(student_id: int,
 def update_student(student_id: int,
                    updated_student: StudentUpdate,
                    db: Session = Depends(get_db),
-                   current_user: UserModel = Depends(get_current_user)):
+                   current_user: UserModel = Depends(require_admin)):
     student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
 
     if not student:
@@ -128,6 +127,30 @@ def update_student(student_id: int,
     db.refresh(student)
 
     return student
+
+
+@app.get("/students/{student_id}", response_model=StudentResponse)
+def get_student(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+            
+    student = db.query(StudentModel).filter(StudentModel.id == student_id).first()
+    
+    if not student:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Student not found"
+                )
+    
+    return student
+
+
+    
+    
+
+    
 
 
 @app.post("/auth/register", response_model= UserResponse)
