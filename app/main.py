@@ -73,7 +73,7 @@ def create_student(
     except IntegrityError:
         db.rollback()
         raise HTTPException(
-            status_code=400,
+            status_code=409,
             detail="Email already exists"
         )
 
@@ -123,8 +123,17 @@ def update_student(student_id: int,
     student.semester = updated_student.semester
     student.email = updated_student.email
 
-    db.commit()
-    db.refresh(student)
+    try:
+        db.commit()
+        db.refresh(student)
+            
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Email already exists"
+            )
+    
 
     return student
 
@@ -170,7 +179,7 @@ def register_user( user: UserCreate, db: Session = Depends(get_db),):
     except IntegrityError:
         db.rollback()
         raise HTTPException(
-            status_code=400,
+            status_code=409,
             detail="Email already exists"
         )
     return new_user
@@ -225,8 +234,17 @@ def update_my_profile(
     current_user.email = updated_user.email
     current_user.password_hash = hash_password(updated_user.password)
         
-    db.commit()
-    db.refresh(current_user)
+    try:
+        db.commit()
+        db.refresh(current_user)
+    
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Email already exists"
+        )
+        
 
     return current_user
 
