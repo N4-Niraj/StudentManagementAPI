@@ -30,7 +30,8 @@ from .schemas import (
     UserCreate,
     UserResponse,
     UserLogin,
-    UserUpdate
+    UserUpdate,
+    StudentPatch
 )
 
 from fastapi.security import OAuth2PasswordRequestForm
@@ -257,4 +258,44 @@ def delete_my_account(
     db.delete(current_user)
     db.commit()
     return 
+    
+    
+    
+
+
+
+@app.patch("/students/{student_id}", response_model=StudentResponse)
+def update_student_partial(
+    student_id: int,
+    updated_student: StudentPatch,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(require_admin)
+):
+    student = db.query(StudentModel).filter(
+        StudentModel.id == student_id
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    update_data = updated_student.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(student, field, value)
+
+    try:
+        db.commit()
+        db.refresh(student)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Email already exists"
+        )
+
+    return student
     

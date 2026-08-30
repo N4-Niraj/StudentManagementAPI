@@ -24,6 +24,21 @@ class StudentUpdate(BaseModel):
     semester: int = Field(ge =1, le =8)
     email: EmailStr 
     
+    
+class StudentPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=100)
+    faculty: str | None = Field(default=None, min_length=2, max_length=100)
+    semester: int | None = Field(default=None, ge=1, le=8)
+    email: EmailStr | None = None
+    
+    
+    
+    
+    
+    
+    
+    
+    
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
