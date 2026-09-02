@@ -18,13 +18,17 @@ class StudentResponse(BaseModel):
         "from_attributes": True
     }
     
+    
+    
+    
+    
 class StudentUpdate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     faculty: str = Field(min_length=2, max_length=100)
     semester: int = Field(ge =1, le =8)
     email: EmailStr 
     
-    
+                                                                                
 class StudentPatch(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=100)
     faculty: str | None = Field(default=None, min_length=2, max_length=100)
