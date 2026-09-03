@@ -10,6 +10,7 @@ from app.models import Base, User as UserModel, Student as StudentModel
 from app.main import app
 from app.database import get_db
 
+from app.security import hash_password
 
 
 TEST_DATABASE_URL = (
@@ -53,3 +54,20 @@ def clean_database():
     db.close()
 
 
+@pytest.fixture
+def admin_user():
+    db = TestingSessionLocal()
+
+    user = UserModel(
+        email="admin_test@example.com",
+        password_hash=hash_password("admin123"),
+        role="admin"
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    db.close()
+
+    return user
