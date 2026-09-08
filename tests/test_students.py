@@ -326,3 +326,51 @@ def test_patch_student(client, admin_user):
     assert student["name"] == "New Name"
     assert student["semester"] == 4
     
+    
+def test_delete_student(client, admin_user):
+    login_response = client.post(
+        "/auth/login",
+        data={
+            "username": admin_user.email,
+            "password":"admin123"
+        }
+    )
+    
+    assert login_response.status_code == 200
+    
+    admin_token = login_response.json()["access_token"]
+    
+    student_response = client.post(
+        "/students",
+        headers={
+            "Authorization": (f"Bearer {admin_token}")
+        },
+        json={
+            "name": "delete test2",
+            "faculty": "BCA",
+            "semester" : 2,
+            "email" : "delete_test2@gmail.com"
+        }
+    )
+    
+    assert student_response.status_code == 200
+    
+    student_id = student_response.json()["id"]
+    
+    response = client.delete(
+        f"/students/{student_id}",
+        headers={
+            "Authorization": (f"Bearer {admin_token}")
+        }
+    )
+    
+    get_response = client.get(
+        f"/students/{student_id}",
+            headers={
+                "Authorization": f"Bearer {admin_token}"
+        })
+
+    assert get_response.status_code == 404
+        
+    assert response.status_code == 200
+    assert response.json()["message"] == "Student deleted successfully"
