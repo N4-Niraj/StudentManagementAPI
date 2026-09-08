@@ -170,3 +170,50 @@ def test_admin_can_delete_student(client, admin_user):
         
     assert response.status_code == 200
     assert response.json()["message"] == "Student deleted successfully"
+
+def test_get_student(client, admin_user):
+    login_response = client.post(
+        "/auth/login",
+        data={
+            "username":admin_user.email,
+            "password":"admin123"
+        }
+    )
+    
+    assert login_response.status_code == 200
+    
+    token = login_response.json()["access_token"]
+    
+    client.post(
+        "/students",
+        headers={
+            "Authorization": f"Bearer {token}"
+        },
+        json={
+            "name":"Student one",
+            "faculty":"BCA",
+            "semester": 2,
+            "email":"student1@gmail.com"
+        }
+    )
+    client.post(
+            "/students",
+            headers={
+                "Authorization": f"Bearer {token}"
+            },
+            json={
+                "name":"Student two",
+                "faculty":"BCA",
+                "semester": 3,
+                "email":"student2@gmail.com"
+            }
+        )
+    response = client.get("/students" ,
+                          headers={
+                              "Authorization": f"Bearer {token}"
+                          })
+    
+    assert response.status_code == 200
+    
+    students = response.json()
+    assert len(students) == 2
