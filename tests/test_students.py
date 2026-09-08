@@ -250,7 +250,7 @@ def test_get_student(client, admin_user):
     
     assert student_response.status_code == 200
     
-    student_id = Response.json()["id"]
+    student_id = student_response.json()["id"]
     
     response = client.get(f"/students/{student_id}" ,
                           headers={
@@ -264,4 +264,65 @@ def test_get_student(client, admin_user):
     assert student["name"] == "studentt"
     assert student["email"] == "studenttt@gmail.com"
     
+def test_patch_student(client, admin_user):
+    login_response = client.post(
+        "/auth/login",
+        data={
+            "username":admin_user.email,
+            "password":"admin123"
+        }
+    )
+    
+    assert login_response.status_code == 200
+    
+    
+    
+    token = login_response.json()["access_token"]
+    
+    
+    student_response = client.post(
+            "/students",
+            headers={
+                "Authorization": f"Bearer {token}"
+            },
+            json={
+                "name":"oldname",
+                "faculty":"BCA",
+                "semester": 2,
+                "email":"oldname@gmail.com"
+            }
+        )
+    
+    assert student_response.status_code == 200
+    
+    student_id = student_response.json()["id"]
+    
+    patch_response = client.patch(
+        f"/students/{student_id}",
+        headers={
+          "Authorization": f"Bearer {token}"
+        },
+        json={
+            "name": "New Name",
+            "semester": 4
+     })
+    
+    assert patch_response.status_code == 200
+    
+      
+
+    response = client.get(f"/students/{student_id}" ,
+                          headers={
+                              "Authorization": f"Bearer {token}"
+                          })
+    
+    assert response.status_code == 200
+    
+    student = response.json()
+    
+    assert student["faculty"] == "BCA"
+    assert student["email"] == "oldname@gmail.com"
+    
+    assert student["name"] == "New Name"
+    assert student["semester"] == 4
     
