@@ -171,7 +171,7 @@ def test_admin_can_delete_student(client, admin_user):
     assert response.status_code == 200
     assert response.json()["message"] == "Student deleted successfully"
 
-def test_get_student(client, admin_user):
+def test_get_students(client, admin_user):
     login_response = client.post(
         "/auth/login",
         data={
@@ -357,13 +357,16 @@ def test_delete_student(client, admin_user):
     
     student_id = student_response.json()["id"]
     
-    response = client.delete(
+    delete_response = client.delete(
         f"/students/{student_id}",
         headers={
             "Authorization": (f"Bearer {admin_token}")
         }
     )
     
+    assert delete_response.status_code == 200
+    assert delete_response.json()["message"] == "Student deleted successfully"
+        
     get_response = client.get(
         f"/students/{student_id}",
             headers={
@@ -372,5 +375,26 @@ def test_delete_student(client, admin_user):
 
     assert get_response.status_code == 404
         
-    assert response.status_code == 200
-    assert response.json()["message"] == "Student deleted successfully"
+    
+    
+def test_get_nonexistent_student(client, admin_user):
+    login_response = client.post(
+            "/auth/login",
+            data={
+                "username": admin_user.email,
+                "password":"admin123"
+            }
+        )
+        
+    assert login_response.status_code == 200
+        
+    admin_token = login_response.json()["access_token"]
+        
+    response = client.get(
+    "/students/999999",
+    headers={
+        "Authorization": f"Bearer {admin_token}"
+    })
+    
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Student not found"
