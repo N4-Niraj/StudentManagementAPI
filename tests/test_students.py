@@ -545,3 +545,19 @@ def test_create_student_invalid_semester(client, admin_user):
         
     assert student1_response.status_code == 422
 
+
+def test_get_students_without_token(client):
+    response = client.get("/students")
+
+    assert response.status_code == 401
+    
+    
+def test_get_students_invalid_token(client):
+    response = client.get(
+        "/students",
+        headers={
+            "Authorization": "Bearer this_is_a_fake_token"
+        }
+    )
+
+    assert response.status_code == 401
