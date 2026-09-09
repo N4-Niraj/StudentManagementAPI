@@ -452,8 +452,96 @@ def test_duplicate_student_email(client, admin_user):
         
     
     
+
+def test_create_student_missing_field(client, admin_user):
+    login_response = client.post(
+            "/auth/login",
+            data={
+                "username":admin_user.email,
+                "password":"admin123"
+            }
+        )
+        
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+        
+        
+    student1_response = client.post(
+                "/students",
+                headers={
+                    "Authorization": f"Bearer {token}"
+                },
+                json={
+                    
+                        "name": "Student One",
+                        "faculty": "BCA",
+                        "semester": 2
+                        
+                    
+                }
+            )
+        
+    assert student1_response.status_code == 422
     
-    
-    
-    
+def test_create_student_invalid_email(client, admin_user):
+    login_response = client.post(
+            "/auth/login",
+            data={
+                "username":admin_user.email,
+                "password":"admin123"
+            }
+        )
+        
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+        
+        
+    student1_response = client.post(
+                "/students",
+                headers={
+                    "Authorization": f"Bearer {token}"
+                },
+                json={
+                    
+                        "name": "Student One",
+                        "faculty": "BCA",
+                        "semester": 2,
+                        "email": "this_is_not_email"
+                        
+                    
+                }
+            )
+        
+    assert student1_response.status_code == 422
+
+def test_create_student_invalid_semester(client, admin_user):
+    login_response = client.post(
+            "/auth/login",
+            data={
+                "username":admin_user.email,
+                "password":"admin123"
+            }
+        )
+        
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+        
+        
+    student1_response = client.post(
+                "/students",
+                headers={
+                    "Authorization": f"Bearer {token}"
+                },
+                json={
+                    
+                        "name": "Student One",
+                        "faculty": "BCA",
+                        "semester": 9,
+                        "email": "random@gmail.com"
+                        
+                    
+                }
+            )
+        
+    assert student1_response.status_code == 422
 
