@@ -398,3 +398,62 @@ def test_get_nonexistent_student(client, admin_user):
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Student not found"
+    
+    
+def test_duplicate_student_email(client, admin_user):
+    login_response = client.post(
+        "/auth/login",
+        data={
+            "username":admin_user.email,
+            "password":"admin123"
+        }
+    )
+    
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+    
+    
+    student1_response = client.post(
+            "/students",
+            headers={
+                "Authorization": f"Bearer {token}"
+            },
+            json={
+                
+                    "name": "Student One",
+                    "faculty": "BCA",
+                    "semester": 2,
+                    "email": "duplicate@gmail.com"
+                
+            }
+        )
+    
+    assert student1_response.status_code == 200
+    
+
+    student2_response = client.post(
+                "/students",
+                headers={
+                    "Authorization": f"Bearer {token}"
+                },
+                json={
+                    
+                        "name": "Student two",
+                        "faculty": "BCA",
+                        "semester": 2,
+                        "email": "duplicate@gmail.com"
+                    
+                }
+            )
+        
+    assert student2_response.status_code == 409 
+        
+    
+        
+    
+    
+    
+    
+    
+    
+
