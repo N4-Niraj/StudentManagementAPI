@@ -1,4 +1,4 @@
-def test_user_cantCreate_student(client):
+def test_user_cannot_create_student(client):
     
     client.post(
         "/auth/register",
