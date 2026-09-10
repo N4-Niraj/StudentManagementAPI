@@ -1,7 +1,3 @@
-
-from app.security import hash_password
-
-
 def test_user_cantCreate_student(client):
     
     client.post(
@@ -39,22 +35,11 @@ def test_user_cantCreate_student(client):
     assert response.status_code == 403
     
     
-def test_admin_can_create_student(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username": admin_user.email,
-            "password": "admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
-        
+def test_admin_can_create_student(client, admin_token):
     response = client.post(
         "/students",
         headers={
-            "Authorization": (f"Bearer {token}")
+            "Authorization": (f"Bearer {admin_token}")
         },
         json = {
             "name":"bruhhh",
@@ -69,24 +54,11 @@ def test_admin_can_create_student(client, admin_user):
     
 #to check so that normal user can't delete student's data
 
-def test_user_cant_delete_student(client, admin_user):
-    
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username": admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    token = login_response.json()["access_token"]
-    
+def test_user_cant_delete_student(client, admin_token):
     student_response = client.post(
         "/students",
         headers = {
-            "Authorization" : (f"Bearer {token}")
+            "Authorization" : (f"Bearer {admin_token}")
         },
         
         json = {
@@ -119,33 +91,21 @@ def test_user_cant_delete_student(client, admin_user):
         }
     )
     
-    normalUser_token = user_login.json()["access_token"]
+    normal_user_token = user_login.json()["access_token"]
     assert user_login.status_code == 200
     
     #normal user tries to delete student..
     response = client.delete(
         f"/students/{student_id}",
         headers={
-            "Authorization": (f"Bearer {normalUser_token}")
+            "Authorization": (f"Bearer {normal_user_token}")
         }
     )
     
     assert response.status_code == 403
     
 # to check : admin can delete students
-def test_admin_can_delete_student(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username": admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    admin_token = login_response.json()["access_token"]
-    
+def test_admin_can_delete_student(client, admin_token):
     student_response = client.post(
         "/students",
         headers={
@@ -171,23 +131,11 @@ def test_admin_can_delete_student(client, admin_user):
     assert response.status_code == 200
     assert response.json()["message"] == "Student deleted successfully"
 
-def test_get_students(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username":admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    token = login_response.json()["access_token"]
-    
+def test_get_students(client, admin_token):
     client.post(
         "/students",
         headers={
-            "Authorization": f"Bearer {token}"
+            "Authorization": f"Bearer {admin_token}"
         },
         json={
             "name":"Student one",
@@ -199,7 +147,7 @@ def test_get_students(client, admin_user):
     client.post(
             "/students",
             headers={
-                "Authorization": f"Bearer {token}"
+                "Authorization": f"Bearer {admin_token}"
             },
             json={
                 "name":"Student two",
@@ -210,7 +158,7 @@ def test_get_students(client, admin_user):
         )
     response = client.get("/students" ,
                           headers={
-                              "Authorization": f"Bearer {token}"
+                              "Authorization": f"Bearer {admin_token}"
                           })
     
     assert response.status_code == 200
@@ -219,26 +167,11 @@ def test_get_students(client, admin_user):
     assert len(students) == 2
     
 
-def test_get_student(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username":admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    
-    
-    token = login_response.json()["access_token"]
-    
-    
+def test_get_student(client, admin_token):
     student_response = client.post(
             "/students",
             headers={
-                "Authorization": f"Bearer {token}"
+                "Authorization": f"Bearer {admin_token}"
             },
             json={
                 "name":"studentt",
@@ -254,7 +187,7 @@ def test_get_student(client, admin_user):
     
     response = client.get(f"/students/{student_id}" ,
                           headers={
-                              "Authorization": f"Bearer {token}"
+                              "Authorization": f"Bearer {admin_token}"
                           })
     
     assert response.status_code == 200
@@ -264,26 +197,11 @@ def test_get_student(client, admin_user):
     assert student["name"] == "studentt"
     assert student["email"] == "studenttt@gmail.com"
     
-def test_patch_student(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username":admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    
-    
-    token = login_response.json()["access_token"]
-    
-    
+def test_patch_student(client, admin_token):
     student_response = client.post(
             "/students",
             headers={
-                "Authorization": f"Bearer {token}"
+                "Authorization": f"Bearer {admin_token}"
             },
             json={
                 "name":"oldname",
@@ -300,7 +218,7 @@ def test_patch_student(client, admin_user):
     patch_response = client.patch(
         f"/students/{student_id}",
         headers={
-          "Authorization": f"Bearer {token}"
+          "Authorization": f"Bearer {admin_token}"
         },
         json={
             "name": "New Name",
@@ -309,11 +227,9 @@ def test_patch_student(client, admin_user):
     
     assert patch_response.status_code == 200
     
-      
-
     response = client.get(f"/students/{student_id}" ,
                           headers={
-                              "Authorization": f"Bearer {token}"
+                              "Authorization": f"Bearer {admin_token}"
                           })
     
     assert response.status_code == 200
@@ -327,19 +243,7 @@ def test_patch_student(client, admin_user):
     assert student["semester"] == 4
     
     
-def test_delete_student(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username": admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    
-    admin_token = login_response.json()["access_token"]
-    
+def test_delete_student(client, admin_token):
     student_response = client.post(
         "/students",
         headers={
@@ -377,19 +281,7 @@ def test_delete_student(client, admin_user):
         
     
     
-def test_get_nonexistent_student(client, admin_user):
-    login_response = client.post(
-            "/auth/login",
-            data={
-                "username": admin_user.email,
-                "password":"admin123"
-            }
-        )
-        
-    assert login_response.status_code == 200
-        
-    admin_token = login_response.json()["access_token"]
-        
+def test_get_nonexistent_student(client, admin_token):
     response = client.get(
     "/students/999999",
     headers={
@@ -400,23 +292,11 @@ def test_get_nonexistent_student(client, admin_user):
     assert response.json()["detail"] == "Student not found"
     
     
-def test_duplicate_student_email(client, admin_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username":admin_user.email,
-            "password":"admin123"
-        }
-    )
-    
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
-    
-    
+def test_duplicate_student_email(client, admin_token):
     student1_response = client.post(
             "/students",
             headers={
-                "Authorization": f"Bearer {token}"
+                "Authorization": f"Bearer {admin_token}"
             },
             json={
                 
@@ -429,12 +309,11 @@ def test_duplicate_student_email(client, admin_user):
         )
     
     assert student1_response.status_code == 200
-    
 
     student2_response = client.post(
                 "/students",
                 headers={
-                    "Authorization": f"Bearer {token}"
+                    "Authorization": f"Bearer {admin_token}"
                 },
                 json={
                     
@@ -453,23 +332,11 @@ def test_duplicate_student_email(client, admin_user):
     
     
 
-def test_create_student_missing_field(client, admin_user):
-    login_response = client.post(
-            "/auth/login",
-            data={
-                "username":admin_user.email,
-                "password":"admin123"
-            }
-        )
-        
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
-        
-        
+def test_create_student_missing_field(client, admin_token):
     student1_response = client.post(
                 "/students",
                 headers={
-                    "Authorization": f"Bearer {token}"
+                    "Authorization": f"Bearer {admin_token}"
                 },
                 json={
                     
@@ -483,23 +350,11 @@ def test_create_student_missing_field(client, admin_user):
         
     assert student1_response.status_code == 422
     
-def test_create_student_invalid_email(client, admin_user):
-    login_response = client.post(
-            "/auth/login",
-            data={
-                "username":admin_user.email,
-                "password":"admin123"
-            }
-        )
-        
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
-        
-        
+def test_create_student_invalid_email(client, admin_token):
     student1_response = client.post(
                 "/students",
                 headers={
-                    "Authorization": f"Bearer {token}"
+                    "Authorization": f"Bearer {admin_token}"
                 },
                 json={
                     
@@ -514,23 +369,11 @@ def test_create_student_invalid_email(client, admin_user):
         
     assert student1_response.status_code == 422
 
-def test_create_student_invalid_semester(client, admin_user):
-    login_response = client.post(
-            "/auth/login",
-            data={
-                "username":admin_user.email,
-                "password":"admin123"
-            }
-        )
-        
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
-        
-        
+def test_create_student_invalid_semester(client, admin_token):
     student1_response = client.post(
                 "/students",
                 headers={
-                    "Authorization": f"Bearer {token}"
+                    "Authorization": f"Bearer {admin_token}"
                 },
                 json={
                     
@@ -562,23 +405,12 @@ def test_get_students_invalid_token(client):
 
     assert response.status_code == 401
     
-def test_tampered_token(client, admin_user):
-    login_response = client.post(
-            "/auth/login",
-            data={
-                "username":admin_user.email,
-                "password":"admin123"
-            }
-        )
-        
-    assert login_response.status_code == 200
-    token = login_response.json()["access_token"]
+def test_tampered_token(client, admin_token):
+    tampered_token = admin_token[:-1] + "x"
     
-    tampered_token = token[:-1] + "x"
-    
-    getResponse = client.get(
+    get_response = client.get(
         "/students",
         headers={
             "Authorization": f"Bearer {tampered_token}"
         })
-    assert getResponse.status_code == 401
+    assert get_response.status_code == 401

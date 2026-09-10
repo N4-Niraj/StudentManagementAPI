@@ -71,3 +71,17 @@ def admin_user():
     db.close()
 
     return user
+
+@pytest.fixture
+def admin_token(client, admin_user):
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": admin_user.email,
+            "password": "admin123"
+        }
+    )
+
+    assert response.status_code == 200
+
+    return response.json()["access_token"]
