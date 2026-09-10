@@ -561,3 +561,24 @@ def test_get_students_invalid_token(client):
     )
 
     assert response.status_code == 401
+    
+def test_tampered_token(client, admin_user):
+    login_response = client.post(
+            "/auth/login",
+            data={
+                "username":admin_user.email,
+                "password":"admin123"
+            }
+        )
+        
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+    
+    tampered_token = token[:-1] + "x"
+    
+    getResponse = client.get(
+        "/students",
+        headers={
+            "Authorization": f"Bearer {tampered_token}"
+        })
+    assert getResponse.status_code == 401
