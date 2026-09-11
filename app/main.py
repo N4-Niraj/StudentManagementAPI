@@ -36,15 +36,30 @@ from .schemas import (
 
 from fastapi.security import OAuth2PasswordRequestForm
 
-app = FastAPI()
+app = FastAPI(
+    title="Student Management API",
+    description="A REST API for managing students and user accounts with JWT authentication and role-based authorization.",
+    version="1.0.0"
+)
 
 
-@app.get("/")
+@app.get(
+    "/",
+    tags=["General"],
+    summary="API welcome endpoint",
+    description="Returns a welcome message confirming that the Student Management API is running."
+)
 def root():
     return {"message": "Welcome to Student Management API"}
 
 
-@app.get("/students", response_model=list[StudentResponse])
+@app.get(
+    "/students",
+    response_model=list[StudentResponse],
+    tags=["Students"],
+    summary="List all students",
+    description="Returns all students. Authentication is required."
+)
 def get_students(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
@@ -53,7 +68,13 @@ def get_students(
     return students
 
 
-@app.post("/students", response_model=StudentResponse)
+@app.post(
+    "/students",
+    response_model=StudentResponse,
+    tags=["Students"],
+    summary="Create a student",
+    description="Creates a new student. Admin authentication is required. Student email addresses must be unique."
+)
 def create_student(
                     student: StudentCreate,
                     db: Session = Depends(get_db),
@@ -88,7 +109,12 @@ def create_student(
     
 
 
-@app.delete("/students/{student_id}")
+@app.delete(
+    "/students/{student_id}",
+    tags=["Students"],
+    summary="Delete a student",
+    description="Deletes a student by ID. Admin authentication is required."
+)
 def delete_student(student_id: int,
                    db: Session = Depends(get_db),
                    current_user: UserModel = Depends(require_admin)):
@@ -105,7 +131,13 @@ def delete_student(student_id: int,
    
 
 
-@app.put("/students/{student_id}", response_model=StudentResponse)
+@app.put(
+    "/students/{student_id}",
+    response_model=StudentResponse,
+    tags=["Students"],
+    summary="Replace a student",
+    description="Updates all student fields. Admin authentication is required."
+)
 def update_student(student_id: int,
                    updated_student: StudentUpdate,
                    db: Session = Depends(get_db),
@@ -139,7 +171,13 @@ def update_student(student_id: int,
     return student
 
 
-@app.get("/students/{student_id}", response_model=StudentResponse)
+@app.get(
+    "/students/{student_id}",
+    response_model=StudentResponse,
+    tags=["Students"],
+    summary="Get a student",
+    description="Returns a single student by ID. Authentication is required."
+)
 def get_student(
     student_id: int,
     db: Session = Depends(get_db),
@@ -162,8 +200,14 @@ def get_student(
 
     
 
+@app.post(
+    "/auth/register",
+    response_model=UserResponse,
+    tags=["Authentication"],
+    summary="Register a new user",
+    description="Creates a new user account. The password is securely hashed before being stored."
+)
 
-@app.post("/auth/register", response_model= UserResponse)
 def register_user( user: UserCreate, db: Session = Depends(get_db),):
     hashed_password = hash_password(user.password)
 
@@ -186,7 +230,12 @@ def register_user( user: UserCreate, db: Session = Depends(get_db),):
     return new_user
 
 
-@app.post("/auth/login")
+@app.post(
+    "/auth/login",
+    tags=["Authentication"],
+    summary="Log in",
+    description="Authenticates a user and returns a JWT access token."
+)
 def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -219,14 +268,26 @@ def login_user(
         "token_type": "bearer"
     }
     
-@app.get("/users/me", response_model=UserResponse)
+@app.get(
+    "/users/me",
+    response_model=UserResponse,
+    tags=["Users"],
+    summary="Get my profile",
+    description="Returns the profile of the currently authenticated user."
+)
 def get_my_profile(
     
     current_user: UserModel = Depends(get_current_user)
 ):
     return current_user
 
-@app.put("/users/me", response_model=UserResponse)
+@app.put(
+    "/users/me",
+    response_model=UserResponse,
+    tags=["Users"],
+    summary="Update my profile",
+    description="Updates the authenticated user's email address and password."
+)
 def update_my_profile(
     updated_user: UserUpdate,
     db: Session = Depends(get_db),
@@ -249,7 +310,12 @@ def update_my_profile(
 
     return current_user
 
-@app.delete("/users/me", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete(
+    "/users/me",
+    tags=["Users"],
+    summary="Delete my account",
+    description="Permanently deletes the currently authenticated user's account."
+)
 def delete_my_account(
                    db: Session = Depends(get_db),
                    current_user: UserModel = Depends(get_current_user)
@@ -264,7 +330,13 @@ def delete_my_account(
 
 
 
-@app.patch("/students/{student_id}", response_model=StudentResponse)
+@app.patch(
+    "/students/{student_id}",
+    response_model=StudentResponse,
+    tags=["Students"],
+    summary="Partially update a student",
+    description="Updates only the fields provided in the request. Admin authentication is required."
+)
 def update_student_partial(
     student_id: int,
     updated_student: StudentPatch,
