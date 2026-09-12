@@ -62,11 +62,11 @@ The API also validates student data and prevents duplicate student email address
 * **Uvicorn**
 * **Swagger UI / OpenAPI**
 
-
 ## Project Structure
 
 ```text
 StudentManagementAPI/
+│
 ├── app/
 │   ├── main.py          # FastAPI application and API routes
 │   ├── database.py      # Database connection and session setup
@@ -81,11 +81,10 @@ StudentManagementAPI/
 │   ├── test_root.py
 │   └── test_students.py
 │
-├── frontend/             # Frontend application
-├── alembic.ini           # Alembic configuration
-├── requirements.txt      # Python dependencies
-├── Design.md             # Project design notes
-└── README.md             # Project documentation
+├── alembic.ini          # Alembic configuration
+├── requirements.txt     # Python dependencies
+├── Design.md            # Project design notes
+└── README.md            # Project documentation
 ```
 
 ## Authentication & Authorization
@@ -141,12 +140,15 @@ Example:
 
 ```env
 DATABASE_URL=postgresql://username:password@localhost:5432/student_management
+
 SECRET_KEY=your-secret-key
+
 ALGORITHM=HS256
+
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-Do **not** commit the `.env` file to Git.
+**Do not** commit the `.env` file to Git.
 
 The project already ignores `.env` through `.gitignore`.
 
@@ -156,6 +158,7 @@ The project already ignores `.env` through `.gitignore`.
 
 ```bash
 git clone <repository-url>
+
 cd StudentManagementAPI
 ```
 
@@ -187,14 +190,13 @@ pip install -r requirements.txt
 
 Create the `.env` file described above and configure your PostgreSQL database.
 
-Make sure PostgreSQL is installed and running, and that the database specified by DATABASE_URL already exists.  
+Make sure PostgreSQL is installed and running, and that the database specified by `DATABASE_URL` already exists.
 
 ### 5. Run database migrations
 
 ```bash
 alembic upgrade head
 ```
-
 
 ### 6. Start the application
 
@@ -224,7 +226,7 @@ Run the complete test suite with:
 pytest
 ```
 
-The current test suite covers:
+The test suite covers:
 
 * User registration
 * User login
@@ -236,8 +238,9 @@ The current test suite covers:
 * Duplicate student emails
 * Missing resources
 * Protected endpoints
+* Authentication and authorization edge cases
 
-The test suite currently contains **24 tests**.
+The current test suite contains automated tests covering the core API functionality and security-related cases.
 
 ## API Endpoints
 
@@ -281,7 +284,6 @@ Possible future improvements include:
 * More granular permissions
 * Better API response/status-code conventions
 * Additional integration tests
-* Frontend integration and deployment
 * Production deployment configuration
 * CI/CD with automated testing
 
